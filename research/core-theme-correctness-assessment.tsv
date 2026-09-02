@@ -1,0 +1,15 @@
+target	correctness_grade	clean_semantic	dirty_semantic	untracked_semantic	staged_semantic	detached_head_semantic
+raw	Control	na	na	na	na	na
+wakamex	A	pass	pass	pass	pass	pass
+robbyrussell	A	pass	pass	pass	pass	pass
+agnoster	A	pass	pass	pass	pass	pass
+bureau	A	pass	pass	pass	pass	pass
+Soliah	E	fail	fail	fail	fail	pass
+steeef	E	pass	fail	fail	pass	pass
+apple	A	pass	pass	pass	pass	pass
+mortalscumbag	A	pass	pass	pass	pass	pass
+ys	A	pass	pass	pass	pass	pass
+bira	A	pass	pass	pass	pass	pass
+pure	A	pass	pass	pass	pass	pass
+powerlevel10k-pure	A	pass	pass	pass	pass	pass
+powerlevel10k-fallback	A	pass	pass	pass	pass	pass

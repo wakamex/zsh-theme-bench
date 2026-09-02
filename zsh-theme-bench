@@ -1,0 +1,121 @@
+#!/usr/bin/env zsh
+
+builtin emulate -L zsh -o no_aliases -o err_return -o pipe_fail
+
+local root=${0:A:h}
+local script_name=${0:t}
+local theme_root=${ZTB_THEME_ROOT:-${root:h}/wakamex-zsh-theme}
+local target_repo=
+local adapter=$root/adapters/wakamex.zsh
+local scratch_parent=/var/tmp
+local -i iterations=10
+local -i fixture_files=1000
+
+usage() {
+  print -r -- "usage: $script_name [OPTION].."
+  print -r --
+  print -r -- 'OPTIONS'
+  print -r -- '  -h, --help'
+  print -r -- '  -i, --iterations NUM       Samples per latency metric [default=10]'
+  print -r -- '  -t, --theme-root DIR       Theme checkout [default=../wakamex-zsh-theme]'
+  print -r -- '  -r, --repo DIR             Repository to scan [default=theme root]'
+  print -r -- '  -a, --adapter FILE         Theme adapter'
+  print -r -- '  -f, --fixture-files NUM    Files in the correctness fixture [default=1000]'
+  print -r -- '  -s, --scratch-parent DIR   Temporary run parent [default=/var/tmp]'
+}
+
+while (( $# )); do
+  case $1 in
+    -h|--help)
+      usage
+      return 0
+    ;;
+    -i|--iterations)
+      (( $# >= 2 )) || { print -u2 -r -- "$1 requires a value"; return 2; }
+      iterations=$2
+      shift 2
+    ;;
+    -t|--theme-root)
+      (( $# >= 2 )) || { print -u2 -r -- "$1 requires a value"; return 2; }
+      theme_root=$2
+      shift 2
+    ;;
+    -r|--repo)
+      (( $# >= 2 )) || { print -u2 -r -- "$1 requires a value"; return 2; }
+      target_repo=$2
+      shift 2
+    ;;
+    -a|--adapter)
+      (( $# >= 2 )) || { print -u2 -r -- "$1 requires a value"; return 2; }
+      adapter=$2
+      shift 2
+    ;;
+    -f|--fixture-files)
+      (( $# >= 2 )) || { print -u2 -r -- "$1 requires a value"; return 2; }
+      fixture_files=$2
+      shift 2
+    ;;
+    -s|--scratch-parent)
+      (( $# >= 2 )) || { print -u2 -r -- "$1 requires a value"; return 2; }
+      scratch_parent=$2
+      shift 2
+    ;;
+    --)
+      shift
+      (( $# == 0 )) || { print -u2 -r -- 'positional arguments are not supported'; return 2; }
+    ;;
+    *)
+      print -u2 -r -- "unknown option: $1"
+      return 2
+    ;;
+  esac
+done
+
+[[ $iterations == <1-> ]] || { print -u2 -r -- 'iterations must be a positive integer'; return 2; }
+[[ $fixture_files == <1-> ]] || { print -u2 -r -- 'fixture-files must be a positive integer'; return 2; }
+
+theme_root=${theme_root:A}
+adapter=${adapter:A}
+scratch_parent=${scratch_parent:A}
+[[ -n $target_repo ]] || target_repo=$theme_root
+target_repo=${target_repo:A}
+
+[[ -d $theme_root ]] || { print -u2 -r -- "theme root is not a directory: $theme_root"; return 2; }
+[[ -d $target_repo ]] || { print -u2 -r -- "repository is not a directory: $target_repo"; return 2; }
+[[ -r $adapter ]] || { print -u2 -r -- "adapter is not readable: $adapter"; return 2; }
+[[ -d $scratch_parent && -w $scratch_parent ]] || {
+  print -u2 -r -- "scratch parent is not writable: $scratch_parent"
+  return 2
+}
+
+local scratch
+scratch=$(mktemp -d "$scratch_parent/zsh-theme-bench.XXXXXX")
+[[ -n $scratch && -d $scratch ]] || { print -u2 -r -- 'failed to create scratch directory'; return 1; }
+trap 'command rm -rf -- "$scratch"' EXIT INT TERM
+
+local fixture=$scratch/fixture
+command git init -q -b main "$fixture"
+command git -C "$fixture" config user.name zsh-theme-bench
+command git -C "$fixture" config user.email zsh-theme-bench@example.invalid
+
+local -i file_number
+for (( file_number = 1; file_number <= fixture_files; ++file_number )); do
+  print -r -- seed > "$fixture/file-$file_number"
+done
+command git -C "$fixture" add .
+command git -C "$fixture" commit -qm seed
+
+local probe_bin=$scratch/bin
+command mkdir "$probe_bin"
+command ln -s "$root/internal/git-probe" "$probe_bin/git"
+
+ZTB_ROOT=$root \
+ZTB_ADAPTER=$adapter \
+ZTB_THEME_ROOT=$theme_root \
+ZTB_TARGET_REPO=$target_repo \
+ZTB_FIXTURE=$fixture \
+ZTB_ITERATIONS=$iterations \
+ZTB_FIXTURE_FILES=$fixture_files \
+ZTB_SCRATCH=$scratch \
+ZTB_GIT_PROBE_BIN=$probe_bin \
+  command zsh -f -i -c 'source "$ZTB_ROOT/internal/run.zsh"'

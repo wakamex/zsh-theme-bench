@@ -1,0 +1,19 @@
+#!/bin/sh
+
+if [ -n "${ZTB_GIT_LOG:-}" ]; then
+  if [ -n "${ZTB_GIT_TRACE_ARGS:-}" ]; then
+    printf '%s\t%s\n' "${GIT_OPTIONAL_LOCKS-unset}" "$*" >> "$ZTB_GIT_LOG"
+  else
+    printf '%s\n' "${GIT_OPTIONAL_LOCKS-unset}" >> "$ZTB_GIT_LOG"
+  fi
+fi
+
+if [ -n "${ZTB_GIT_ACTIVITY_LOG:-}" ]; then
+  printf '%s\n' "$$" >> "$ZTB_GIT_ACTIVITY_LOG"
+fi
+
+if [ -n "${ZTB_GIT_DELAY:-}" ] && [ "${1:-}" = status ]; then
+  sleep "$ZTB_GIT_DELAY"
+fi
+
+exec "$ZTB_REAL_GIT" "$@"
