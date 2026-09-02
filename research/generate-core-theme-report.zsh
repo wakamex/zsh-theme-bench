@@ -34,10 +34,11 @@ local assessment=$script_dir/core-theme-correctness-assessment.tsv
 local annotations=$script_dir/core-theme-report-annotations.tsv
 local validator=$script_dir/validate-core-theme-correctness-assessment.zsh
 local summarizer=$script_dir/summarize-core-theme-samples.zsh
+local methodology=$script_dir/../METHODOLOGY.md
 local output_dir=${output:h}
 
 [[ -d $run ]] || fail "run directory does not exist: $run"
-for required_file in $summary $samples $telemetry $metadata $dispersion $assessment $annotations $validator $summarizer; do
+for required_file in $summary $samples $telemetry $metadata $dispersion $assessment $annotations $validator $summarizer $methodology; do
   [[ -r $required_file ]] || fail "required input is not readable: $required_file"
 done
 [[ -d $output_dir ]] || fail "output directory does not exist: $output_dir"
@@ -91,12 +92,13 @@ cpu_psi_median=$(command gawk -F '\t' '
   }
 ' "$samples") || fail 'could not calculate median per-sample CPU PSI overlap'
 
-local run_link dispersion_link assessment_link annotations_link generator_link
+local run_link dispersion_link assessment_link annotations_link generator_link methodology_link
 run_link=$(command realpath --relative-to="$output_dir" "$run")
 dispersion_link=$(command realpath --relative-to="$output_dir" "$dispersion")
 assessment_link=$(command realpath --relative-to="$output_dir" "$assessment")
 annotations_link=$(command realpath --relative-to="$output_dir" "$annotations")
 generator_link=$(command realpath --relative-to="$output_dir" "$0")
+methodology_link=$(command realpath --relative-to="$output_dir" "$methodology")
 
 command gawk -F '\t' \
   -v metadata="$metadata" \
@@ -108,6 +110,7 @@ command gawk -F '\t' \
   -v assessment_link="$assessment_link" \
   -v annotations_link="$annotations_link" \
   -v generator_link="$generator_link" \
+  -v methodology_link="$methodology_link" \
   -v cpu_psi_median="$cpu_psi_median" '
   function die(message) {
     print "error: " message > "/dev/stderr"
@@ -358,6 +361,8 @@ command gawk -F '\t' \
     print "."
     print ""
     printf "Each target ran in a fresh interactive PTY against the same %s-file Git fixture. The shell was reused for %d timed transitions in each of clean, tracked-dirty, and untracked state, followed by one untimed staged and detached-HEAD check.\n", integer_with_commas(fixture_files[order[1]]), iterations[order[1]]
+    print ""
+    printf "The complete measurement boundary and acceptance rules are documented in [`METHODOLOGY.md`](%s).\n", methodology_link
     print ""
     printf "The accepted run started at `%s` from benchmark commit `%s`, runner SHA-256 `%s`, Wakamex commit `%s`, OMZ commit `%s`, Pure commit `%s`, Powerlevel10k commit `%s`, and gitstatusd SHA-256 `%s`.\n", snapshot[order[1]], meta["benchmark_commit"], meta["runner_sha256"], target_commit["wakamex"], meta["omz_commit"], meta["pure_commit"], meta["powerlevel10k_commit"], meta["powerlevel10k_gitstatusd_sha256"]
     print ""

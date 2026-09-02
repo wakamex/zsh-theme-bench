@@ -6,6 +6,8 @@ The accepted 20-iteration run found wakamex had the lowest worst retained settle
 
 Each target ran in a fresh interactive PTY against the same 1,000-file Git fixture. The shell was reused for 20 timed transitions in each of clean, tracked-dirty, and untracked state, followed by one untimed staged and detached-HEAD check.
 
+The complete measurement boundary and acceptance rules are documented in [`METHODOLOGY.md`](../METHODOLOGY.md).
+
 The accepted run started at `2026-09-02T01:43:24Z` from benchmark commit `2a8202573382705a9d423e5818e57d59e774bf3e`, runner SHA-256 `5a02941e176b9f49a05c37d8417a76b96b4a65bcf8812221a82d30ffd3ad5061`, Wakamex commit `0fa4a72ff93c544567760958845ab199808f3017`, OMZ commit `2264a8042763edf2620cfe32d96b096e1f3d26aa`, Pure commit `dbefd0dcafaa3ac7d7222ca50890d9d0c97f7ca2`, Powerlevel10k commit `35833ea15f14b71dbcebc7e54c104d8d56ca5268`, and gitstatusd SHA-256 `02b7bc11a70a68e484c44e3c7e4da1ed403c7b74a94a2b1e169266ea10460c79`.
 
 Artifacts: [`summary.tsv`](core-theme-run-20260902T014321Z/summary.tsv), [`samples.tsv`](core-theme-run-20260902T014321Z/samples.tsv), [`telemetry.tsv`](core-theme-run-20260902T014321Z/telemetry.tsv), [`metadata.txt`](core-theme-run-20260902T014321Z/metadata.txt), and [`dispersion.tsv`](core-theme-run-20260902T014321Z-dispersion.tsv).
