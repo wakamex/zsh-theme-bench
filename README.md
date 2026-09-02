@@ -152,3 +152,7 @@ OMZ targets load the complete framework from the pinned commit recorded in the T
 The load values therefore include different integration scopes; the command-to-prompt values are the portable comparison.
 
 The selectable `direct-git` control runs the same single `git status --porcelain=v2 --branch --untracked-files=normal --ignore-submodules=dirty` scan used by the Wakamex collector, with `GIT_OPTIONAL_LOCKS=0`, through the same PTY transition path. Compare it with `raw` to isolate direct scan cost before attributing additional settled latency to provider transport, parsing, snapshot publication, or repainting. It remains outside the default historical theme matrix and can be requested with `--target raw --target direct-git`.
+
+## Latest accepted result
+
+The accepted 20-iteration, 14-target run found Wakamex had the lowest worst retained settled latency among themes that passed every applicable semantic check at 8.126 ms. It used one optional-lock-safe Git process per transition and received A correctness, A first-prompt latency, B updated-Git latency, A process efficiency, and A lock hygiene. The [`2026-09-02 report`](research/core-theme-benchmark-2026-09-02.md) contains the full comparison and links to its summary, 840 timed samples, telemetry, metadata, and derived dispersion.
